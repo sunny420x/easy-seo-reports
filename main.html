@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมช่วยสรุป Report Ads และ Ranking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <style>
+        #image-preview-container img {
+            max-width: 200px;
+            margin: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .paste-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .paste-area:hover {
+            background: #eef;
+            border-color: #0d6efd;
+        }
+    </style>
+</head>
+
+<body style="background: #f1f1f1;">
+    <div class="container mt-4 p-4 rounded" style="background: #fff;">
+        <h2 class="mb-3">โปรแกรมช่วยสรุป Report Ads และ Ranking</h2>
+        <hr>
+        <form action="report.html" method="get">
+            <div class="input-group mb-3">
+                <span class="input-group-text">Google Ads - Period (From)</span>
+                <input type="date" class="form-control" name="google_ads_period_from">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Google Ads - Period (To)</span>
+                <input type="date" class="form-control" name="google_ads_period_to">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Google Ads - Budget</span>
+                <input type="text" class="form-control" name="google_ads_budget">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Google Ads - Totals Spend</span>
+                <input type="text" class="form-control" name="google_ads_spend">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Google Ads - Item Amount</span>
+                <input type="number" class="form-control" id="google_ads_item_amount" oninput="initGoogleAdsItem()">
+            </div>
+            <div id="google_ads_item_holder">
+
+            </div>
+
+            <div class="mb-3 mt-4 p-3 border rounded bg-light">
+                <label class="form-label fw-bold">รูปภาพประกอบ (วางได้หลายรูป)</label>
+                <div id="paste-zone" class="paste-area">
+                    คลิกที่นี่แล้วกด <kbd>Ctrl + V</kbd> เพื่อวางรูปภาพ
+                </div>
+                <div id="image-preview-container" class="d-flex flex-wrap mt-3"></div>
+                <div id="hidden-images-data"></div>
+            </div>
+
+            <script>
+                let google_ads_item_holder = document.getElementById('google_ads_item_holder')
+
+                function initGoogleAdsItem() {
+                    if (document.getElementById('google_ads_item_amount').value == "") {
+                        google_ads_item_holder.innerHTML = "";
+                    }
+
+                    //Reset Item Holder
+                    google_ads_item_holder.innerHTML = "";
+
+                    let amount = parseInt(document.getElementById('google_ads_item_amount').value)
+                    for (i = 0; i < amount; i++) {
+                        google_ads_item_holder.innerHTML +=
+                            `
+                        <div class="p-4 pt-0">
+                        <b>Item #${i}</b>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Google Ads - Ad Title</span>
+                            <input type="text" class="form-control" name="google_ads_title_${i}">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Google Ads - Impression</span>
+                            <input type="number" class="form-control" name="google_ads_impression_${i}">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Google Ads - Clicks</span>
+                            <input type="number" class="form-control" name="google_ads_clicks_${i}">
+                        </div>
+                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Google Ads - CPC</span>
+                            <input type="text" class="form-control" name="google_ads_cpc_${i}">
+                        </div>
+                        </div>`
+                    }
+                }
+
+                document.addEventListener('paste', function (e) {
+                    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+
+                    for (let index in items) {
+                        const item = items[index];
+                        if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
+                            const blob = item.getAsFile();
+                            const reader = new FileReader();
+
+                            reader.onload = function (event) {
+                                // 1. สร้าง Unique ID สำหรับรูปนี้
+                                const imgId = 'img_' + new Date().getTime();
+
+                                // 2. แสดงรูป Preview
+                                const container = document.getElementById('image-preview-container');
+                                const img = document.createElement('img');
+                                img.src = event.target.result;
+                                img.className = 'img-thumbnail';
+                                img.id = 'preview_' + imgId;
+                                img.title = 'คลิกเพื่อลบ';
+
+                                // แถม: คลิกที่รูปเพื่อลบได้
+                                img.onclick = function () {
+                                    document.getElementById('preview_' + imgId).remove();
+                                    document.getElementById('hidden_' + imgId).remove();
+                                };
+
+                                container.appendChild(img);
+
+                                // 3. สร้าง Hidden Input สำหรับส่ง Data URL ไปหน้า report.html
+                                const hiddenDataContainer = document.getElementById('hidden-images-data');
+                                const hiddenInput = document.createElement('input');
+                                hiddenInput.type = 'hidden';
+                                // สำคัญ: ใช้ [] ท้ายชื่อเพื่อให้รับค่าเป็น Array ใน PHP/JS
+                                hiddenInput.name = 'report_images[]';
+                                hiddenInput.value = event.target.result;
+                                hiddenInput.id = 'hidden_' + imgId;
+                                hiddenDataContainer.appendChild(hiddenInput);
+                            };
+
+                            reader.readAsDataURL(blob);
+                        }
+                    }
+                });
+
+                let imagesArray = []; // เก็บรวมไว้ในนี้
+
+                // เมื่อกดปุ่ม "ออกรายงาน"
+                document.querySelector('form').onsubmit = function (e) {
+                    // ดึงรูปจาก Preview เก็บใส่ Array
+                    const previewImgs = document.querySelectorAll('#image-preview-container img');
+                    previewImgs.forEach(img => imagesArray.push(img.src));
+
+                    // เซฟลงเครื่องคนใช้ (Browser)
+                    localStorage.setItem('report_images', JSON.stringify(imagesArray));
+                };
+            </script>
+
+            <button type="submit" class="btn btn-primary">ออกรายงาน</button>
+        </form>
+    </div>
+</body>
+
+</html>
