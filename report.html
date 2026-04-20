@@ -7,62 +7,16 @@
     <title>สรุปรายงาน Ads และ Ranking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            background: #f8f9fa;
-            font-family: 'Sarabun', sans-serif;
-        }
-
-        .report-card {
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            margin-top: 30px;
-        }
-
-        .header-title {
-            color: #0d6efd;
-            border-left: 5px solid #0d6efd;
-            padding-left: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-box {
-            background: #f1f7ff;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            height: 100%;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #0d6efd;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        table {
-            margin-top: 20px;
-        }
-
+        body { background: #f8f9fa; font-family: 'Sarabun', sans-serif; }
+        .report-card { background: #fff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); padding: 40px; margin-top: 30px; }
+        .header-title { color: #0d6efd; border-left: 5px solid #0d6efd; padding-left: 15px; margin-bottom: 25px; }
+        table { margin-top: 20px; }
+        .img-report { max-width: 100%; height: auto; border: 1px solid #eee; }
+        
         @media print {
-            .no-print {
-                display: none;
-            }
-
-            body {
-                background: #fff;
-            }
-
-            .report-card {
-                box-shadow: none;
-                padding: 0;
-            }
+            .no-print { display: none; }
+            body { background: #fff; }
+            .report-card { box-shadow: none; padding: 0; margin-top: 0; }
         }
     </style>
 </head>
@@ -78,28 +32,31 @@
                 </div>
             </div>
 
-            <h4 class="mb-3 text-secondary">1. SEO Overview</h4>
-            <div id="val-images-container"></div>
+            <h4 class="mb-3 text-secondary border-bottom pb-2">1. สรุปผลการดำเนินงาน (Visual Overview)</h4>
+            <div id="val-images-container" class="mb-5 text-center">
+                </div>
 
-            <h4 class="mb-3 text-secondary">2. Google Ads Summary</h4>
-            <div class="p-3 border rounded mb-4 bg-light">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>ระยะเวลา:</strong> <span id="val-period">-</span></p>
+            <h4 class="mb-3 text-secondary border-bottom pb-2">2. Google Ads Summary</h4>
+            <div class="p-3 border rounded mb-4 bg-light shadow-sm">
+                <div class="row text-center">
+                    <div class="col-md-6 border-end">
+                        <small class="text-muted">ระยะเวลา</small>
+                        <p class="mb-0 fw-bold"><span id="val-period">-</span></p>
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <small class="text-muted">งบประมาณ</small>
+                        <p class="mb-0 fw-bold text-primary"><span id="val-budget">-</span></p>
                     </div>
                     <div class="col-md-3">
-                        <p><strong>งบประมาณที่ตั้งไว้:</strong> <span id="val-budget">-</span></p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>จ่ายจริง (Total Spend):</strong> <span id="val-spend" class="text-danger">-</span>
-                        </p>
+                        <small class="text-muted">จ่ายจริง</small>
+                        <p class="mb-0 fw-bold text-danger"><span id="val-spend">-</span></p>
                     </div>
                 </div>
             </div>
 
-            <h4 class="mb-3 text-secondary">3. Detailed Ads Performance</h4>
+            <h4 class="mb-3 text-secondary border-bottom pb-2">3. Detailed Ads Performance</h4>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle">
+                <table class="table table-bordered table-striped align-middle shadow-sm">
                     <thead class="table-primary">
                         <tr>
                             <th>Ad Title</th>
@@ -110,7 +67,7 @@
                         </tr>
                     </thead>
                     <tbody id="val-ads-table">
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
 
@@ -121,22 +78,17 @@
     </div>
 
     <script>
-        // ดึงค่าจาก URL
+        // 1. ดึงค่าจาก URL Parameters
         const params = new URLSearchParams(window.location.search);
 
-        // SEO Data
-        document.getElementById('val-semrush').innerText = params.get('seo_ranking_semrush') || '0';
-        document.getElementById('val-ahref').innerText = params.get('seo_ranking_ahref') || '0';
-        document.getElementById('val-ga').innerText = params.get('seo_ranking_google_analytic') || '0';
-
         // Ads Summary
-        const from = params.get('google_ads_period_from') || '';
-        const to = params.get('google_ads_period_to') || '';
+        const from = params.get('google_ads_period_from') || '-';
+        const to = params.get('google_ads_period_to') || '-';
         document.getElementById('val-period').innerText = `${from} ถึง ${to}`;
         document.getElementById('val-budget').innerText = (params.get('google_ads_budget') || '0') + ' บาท';
         document.getElementById('val-spend').innerText = (params.get('google_ads_spend') || '0') + ' บาท';
 
-        // Ads Table Loop
+        // 2. วนลูปสร้างตาราง Ads
         const tableBody = document.getElementById('val-ads-table');
         let i = 0;
         let hasData = false;
@@ -147,20 +99,16 @@
             const impression = parseInt(params.get(`google_ads_impression_${i}`)) || 0;
             const clicks = parseInt(params.get(`google_ads_clicks_${i}`)) || 0;
             const cpc = params.get(`google_ads_cpc_${i}`) || '0';
-
-            // คำนวณ CTR
             const ctr = impression > 0 ? ((clicks / impression) * 100).toFixed(2) : 0;
 
-            const row = `
+            tableBody.innerHTML += `
                 <tr>
                     <td><strong>${title}</strong></td>
                     <td class="text-center">${impression.toLocaleString()}</td>
                     <td class="text-center">${clicks.toLocaleString()}</td>
-                    <td class="text-center">${ctr}%</td>
+                    <td class="text-center text-primary">${ctr}%</td>
                     <td class="text-center">${cpc}</td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
+                </tr>`;
             i++;
         }
 
@@ -168,21 +116,26 @@
             tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">ไม่มีข้อมูลโฆษณา</td></tr>';
         }
 
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('th-TH');
-        
+        // 3. ดึงรูปภาพจาก LocalStorage
         const savedImages = JSON.parse(localStorage.getItem('report_imgs') || "[]");
+        const imgContainer = document.getElementById('val-images-container');
 
         if (savedImages.length > 0) {
-            // สมมติว่าพี่มี <div id="val-images-container"></div> เตรียมไว้แล้ว
-            const container = document.getElementById('val-images-container');
-
             savedImages.forEach(imgData => {
                 const img = document.createElement('img');
                 img.src = imgData;
-                img.className = 'img-fluid mb-4 rounded shadow-sm d-block mx-auto';
-                container.appendChild(img);
+                img.className = 'img-report mb-4 rounded shadow-sm d-block mx-auto';
+                imgContainer.appendChild(img);
             });
+        } else {
+            imgContainer.innerHTML = '<p class="text-muted">ไม่มีรูปภาพประกอบ</p>';
         }
+
+        // วันที่ปัจจุบัน
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('th-TH', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
     </script>
 </body>
 
