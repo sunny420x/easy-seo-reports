@@ -163,12 +163,16 @@
 
                 // เมื่อกดปุ่ม "ออกรายงาน"
                 document.querySelector('form').onsubmit = function (e) {
-                    // ดึงรูปจาก Preview เก็บใส่ Array
+                    // 1. ดึงข้อมูลรูปภาพจาก Preview Container
                     const previewImgs = document.querySelectorAll('#image-preview-container img');
-                    previewImgs.forEach(img => imagesArray.push(img.src));
+                    let imagesData = [];
+                    previewImgs.forEach(img => imagesData.push(img.src));
 
-                    // เซฟลงเครื่องคนใช้ (Browser)
-                    localStorage.setItem('report_images', JSON.stringify(imagesArray));
+                    // 2. เซฟลง LocalStorage (ชื่อคีย์ 'report_imgs')
+                    localStorage.setItem('report_imgs', JSON.stringify(imagesData));
+
+                    // 3. ปล่อยให้ฟอร์มส่ง GET ไปหน้า report.html ตามปกติ (URL จะสั้น เพราะไม่มีรูปแล้ว)
+                    return true;
                 };
             </script>
 

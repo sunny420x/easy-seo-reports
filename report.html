@@ -169,13 +169,18 @@
         }
 
         document.getElementById('current-date').innerText = new Date().toLocaleDateString('th-TH');
-
-        const savedImages = JSON.parse(localStorage.getItem('report_images') || "[]");
+        
+        const savedImages = JSON.parse(localStorage.getItem('report_imgs') || "[]");
 
         if (savedImages.length > 0) {
+            // สมมติว่าพี่มี <div id="val-images-container"></div> เตรียมไว้แล้ว
             const container = document.getElementById('val-images-container');
+
             savedImages.forEach(imgData => {
-                container.innerHTML += `<img src="${imgData}" class="img-fluid mb-3">`;
+                const img = document.createElement('img');
+                img.src = imgData;
+                img.className = 'img-fluid mb-4 rounded shadow-sm d-block mx-auto';
+                container.appendChild(img);
             });
         }
     </script>
